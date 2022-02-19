@@ -4,9 +4,9 @@ import { logger } from "../utils/logger"
 import chalk from "chalk"
 
 export const commit = async () => {
-    try {
-        const branch = await getCurrentBranch()
+    const branch = await getCurrentBranch()
 
+    try {
         const [type, details] = parseBranch(branch)
     
         logger.log(

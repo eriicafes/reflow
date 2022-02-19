@@ -2,9 +2,9 @@ import fs from "fs"
 import path from "path"
 
 export const ROOT_DIR = path.resolve(__dirname, "..", "..")
-export const PACKAGE_JSON_DIR = path.join(ROOT_DIR, "package.json")
+export const PACKAGE_JSON_PATH = path.join(ROOT_DIR, "package.json")
 
-const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON_DIR, "utf-8"))
+const packageJson = JSON.parse(fs.readFileSync(PACKAGE_JSON_PATH, "utf-8"))
 
 export const config = {
     name: packageJson.name.split("/").pop() as string,

@@ -2,8 +2,14 @@ import chalk from "chalk"
 import { config } from "../utils/config"
 import { getCurrentBranch, isMergeContext } from "../utils/git"
 import { line, lineAfter, logger } from "../utils/logger"
+import standardVersion from "standard-version"
 
-export const release = async () => {
+type ReleaseOptions = {
+    dryRun: boolean,
+    push: boolean
+}
+
+export const release = async ({dryRun, push}: ReleaseOptions) => {
     const branch = await getCurrentBranch()
 
     try {
@@ -19,9 +25,26 @@ export const release = async () => {
         }
 
         logger.log(
-            chalk.magentaBright("Releasing:"),
+            line(chalk.magentaBright("Releasing:"),
             chalk.blueBright(branch),
+            dryRun ? chalk.bold.yellow("[Dry Run]") : "")
         )
+
+        await standardVersion({
+            noVerify: true,
+            dryRun,
+        })
+
+        if (push) {
+            logger.log(
+                line(),
+                line(
+                chalk.magentaBright("Pushing changes and tags..."),
+                dryRun ? chalk.bold.yellow("[Dry Run]") : "")
+            )
+        }
+
+        process.exit()
 
     } catch (err: any) {
         logger.error(err.message)

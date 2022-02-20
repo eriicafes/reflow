@@ -2,6 +2,19 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.2](https://github.com/eriicafes/reflow/compare/v0.1.1...v0.1.2) (2022-02-20)
+
+
+### Features
+
+* added merge program ([f1322b8](https://github.com/eriicafes/reflow/commit/f1322b853a08c49cabe692c3c8224d02e317d5df))
+* added spawn child_process with stdio set to 'inherit' form merge command to be interactive ([3cce193](https://github.com/eriicafes/reflow/commit/3cce1933ffd2f27ebf7cbed68f87bb03e1f42074))
+
+
+### Bug Fixes
+
+* throw appropriate error in pushWithTags ([5cc779f](https://github.com/eriicafes/reflow/commit/5cc779fa2d92dfeb35e4c7374f37ba2e80d36e84))
+
 ### 0.1.1 (2022-02-20)
 
 

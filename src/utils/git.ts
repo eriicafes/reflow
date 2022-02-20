@@ -1,8 +1,8 @@
-import { exec } from "./exec"
+import { exec, spawn } from "./exec"
 import fs from "fs"
 import path from "path"
 import { prompt } from "./prompt"
-import { line, lineAfter, logger } from "./logger"
+import { line, logger } from "./logger"
 import chalk from "chalk"
 import { s } from "./snippets"
 import { config } from "./config"
@@ -33,15 +33,9 @@ export const mergeBranchToMain = async (currentBranch: string, targetBranch: str
     }
 
     // Now in mainBranch
-    await exec(`git merge ${targetBranch} ${preferFastForward ? "--ff" : "--no-ff "}`)
-        .then(async ({stdout}) => {
-            console.log({stdout})
-
+    await spawn(`git merge ${targetBranch} ${preferFastForward ? "--ff" : "--no-ff "}`)
+        .then(async () => {
             if (deleteOnSuccess) await exec(`git branch -d ${targetBranch}`)
-        })
-        .catch(({stdout, stderr}) => {
-            logger.log("Unabke to complete automatic merge")
-            console.log(stderr || stdout)
         })
         .finally(async () => {
             // Return back to current branch if checked out main and branch was not deleted

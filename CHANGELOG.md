@@ -2,6 +2,14 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.3](https://github.com/eriicafes/reflow/compare/v0.1.2...v0.1.3) (2022-02-20)
+
+
+### Bug Fixes
+
+* handle errors in command with try-catch block ([13c71ad](https://github.com/eriicafes/reflow/commit/13c71ad24f455735aa1a763509fbd4ea56adc965))
+* remove space after --no-ff which causes the git merge command to fail ([667240e](https://github.com/eriicafes/reflow/commit/667240ea21434d0f3d3dc0138df20747c8e71695))
+
 ### [0.1.2](https://github.com/eriicafes/reflow/compare/v0.1.1...v0.1.2) (2022-02-20)
 
 

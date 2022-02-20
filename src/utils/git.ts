@@ -33,7 +33,7 @@ export const mergeBranchToMain = async (currentBranch: string, targetBranch: str
     }
 
     // Now in mainBranch
-    await spawn(`git merge ${targetBranch} ${preferFastForward ? "--ff" : "--no-ff "}`)
+    await spawn(`git merge ${targetBranch} ${preferFastForward ? "--ff" : "--no-ff"}`)
         .then(async () => {
             if (deleteOnSuccess) await exec(`git branch -d ${targetBranch}`)
         })

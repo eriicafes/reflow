@@ -34,6 +34,7 @@ export const release = async ({dryRun, push}: ReleaseOptions) => {
             // @ts-ignore
             // A bug in standard-version argument parsing with yargs (Negating Boolean Arguments '--no-verify') has led the option 'noVerify' to be specified instead of 'verify'
             verify: false,
+            commitAll: true,
             dryRun,
         })
 

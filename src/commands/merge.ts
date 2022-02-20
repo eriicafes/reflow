@@ -14,12 +14,19 @@ export const merge = async ({dryRun, preferFastForward}: MergeOptions) => {
         const branch = await getCurrentBranch()
 
         if (branch === config.mainBranch) {
+            const workingBranches = await getWorkingBranches()
+
+            if (!workingBranches.length) {
+                logger.log("No working branches available")
+                process.exit()
+            }
+
             const {targetBranch, proceed, cleanup} = await prompt([
                 {
                     type: "list",
                     name: "targetBranch",
                     message: `Which branch do you want to merge to ${config.mainBranch}`,
-                    choices: await getWorkingBranches()
+                    choices: workingBranches
                 },
                 {
                     type: "confirm",

@@ -1,4 +1,4 @@
-const s = (snip: string) => "`" + snip + "`"
+export const s = (snip: string) => "`" + snip + "`"
 
 export const snippets = {
     branch: s("reflow branch"),

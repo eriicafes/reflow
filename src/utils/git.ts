@@ -5,11 +5,48 @@ import { prompt } from "./prompt"
 import { line, lineAfter, logger } from "./logger"
 import chalk from "chalk"
 import { s } from "./snippets"
+import { config } from "./config"
 
 export const getCurrentBranch = async () => {
     const { stdout } = await exec("git rev-parse --abbrev-ref HEAD")
-
+    
     return stdout.trim()
+}
+
+export const getWorkingBranches = async () => {
+    const { stdout } = await exec("git branch")
+
+    const branches = stdout.
+        trim()
+        .split("\n")
+        .map(b => b.replace("*", "").trim())
+        .filter(b => b !== config.mainBranch)
+
+    return branches
+}
+
+export const mergeBranchToMain = async (currentBranch: string, targetBranch: string, preferFastForward: boolean, deleteOnSuccess: boolean) => {
+    // Checkout mainBranch if not there initially
+    if (currentBranch !== config.mainBranch) {
+        logger.log("Checking out " + config.mainBranch)
+        await exec(`git checkout ${config.mainBranch}`)
+    }
+
+    // Now in mainBranch
+    await exec(`git merge ${targetBranch} ${preferFastForward ? "--ff" : "--no-ff "}`)
+        .then(async ({stdout}) => {
+            console.log({stdout})
+
+            if (deleteOnSuccess) await exec(`git branch -d ${targetBranch}`)
+        })
+        .catch(({stdout, stderr}) => {
+            logger.log("Unabke to complete automatic merge")
+            console.log(stderr || stdout)
+        })
+        .finally(async () => {
+            // Return back to current branch if checked out main and branch was not deleted
+            if (!deleteOnSuccess && currentBranch !== config.mainBranch) await exec(`git checkout ${currentBranch}`)
+        })
 }
 
 export const isMergeContext = () => {

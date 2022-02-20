@@ -83,11 +83,13 @@ export const pushWithTags = async () => {
     } catch (err: any) {
         if (!err.stderr.includes("no upstream branch")) throw err
 
-        await setUpstreamBranch().catch(() => {
+        await setUpstreamBranch().catch((e) => {
             logger.log(
                 line("Unable to set upstream branch") + 
                 line("Run", chalk.green(s(`git push --set-upstream origin ${currentBranch} --follow-tags`)), "to push changes")
             )
+
+            throw(e)
         })
 
         await push

@@ -10,51 +10,57 @@ type MergeOptions = {
 }
 
 export const merge = async ({dryRun, preferFastForward}: MergeOptions) => {
-    const branch = await getCurrentBranch()
+    try {
+        const branch = await getCurrentBranch()
 
-    if (branch === config.mainBranch) {
-        const {targetBranch, proceed, cleanup} = await prompt([
-            {
-                type: "list",
-                name: "targetBranch",
-                message: `Which branch do you want to merge to ${config.mainBranch}`,
-                choices: await getWorkingBranches()
-            },
-            {
-                type: "confirm",
-                name: "proceed",
-                message(ctx) {
-                    return `Do you really want to merge ${ctx.targetBranch} to ${config.mainBranch}`
+        if (branch === config.mainBranch) {
+            const {targetBranch, proceed, cleanup} = await prompt([
+                {
+                    type: "list",
+                    name: "targetBranch",
+                    message: `Which branch do you want to merge to ${config.mainBranch}`,
+                    choices: await getWorkingBranches()
                 },
-            },
-            {
-                type: "confirm",
-                name: "cleanup",
-                message: "Delete this branch after a successful merge",
-            }
-        ])
+                {
+                    type: "confirm",
+                    name: "proceed",
+                    message(ctx) {
+                        return `Do you really want to merge ${ctx.targetBranch} to ${config.mainBranch}`
+                    },
+                },
+                {
+                    type: "confirm",
+                    name: "cleanup",
+                    message: "Delete this branch after a successful merge",
+                }
+            ])
 
-        logger.log(line() + line("Merging", targetBranch, "into", config.mainBranch, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
+            logger.log(line() + line("Merging", targetBranch, "into", config.mainBranch, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
 
-        if (proceed && !dryRun) await mergeBranchToMain(branch, targetBranch, preferFastForward, cleanup)
+            if (proceed && !dryRun) await mergeBranchToMain(branch, targetBranch, preferFastForward, cleanup)
 
-    } else {
-        const {proceed, cleanup} = await prompt([
-            {
-                type: "confirm",
-                name: "proceed",
-                message: `Do you want to merge this branch to ${config.mainBranch}`
-            },
-            {
-                type: "confirm",
-                name: "cleanup",
-                message: "Delete this branch after a successful merge",
-            }
-        ])
+        } else {
+            const {proceed, cleanup} = await prompt([
+                {
+                    type: "confirm",
+                    name: "proceed",
+                    message: `Do you want to merge this branch to ${config.mainBranch}`
+                },
+                {
+                    type: "confirm",
+                    name: "cleanup",
+                    message: "Delete this branch after a successful merge",
+                }
+            ])
 
-        logger.log(line() + line("Merging", branch, "into", config.mainBranch, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
+            logger.log(line() + line("Merging", branch, "into", config.mainBranch, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
 
-        if(proceed && !dryRun) await mergeBranchToMain(branch, branch, preferFastForward, cleanup)
+            if(proceed && !dryRun) await mergeBranchToMain(branch, branch, preferFastForward, cleanup)
+        } 
+    } catch (err: any) {
+        logger.error(err.message)
+        
+        process.exit(1)
     }
 
 }

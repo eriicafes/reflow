@@ -10,9 +10,9 @@ type ReleaseOptions = {
 }
 
 export const release = async ({dryRun, push}: ReleaseOptions) => {
-    const branch = await getCurrentBranch()
-
     try {
+        const branch = await getCurrentBranch()
+        
         if (branch !== config.mainBranch) {
 
             if (isMergeContext()) process.exit(0) // release was called during merge to another branch

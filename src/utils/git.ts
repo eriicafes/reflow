@@ -1,15 +1,46 @@
-import { exec } from "./exec"
+import { exec, spawn } from "./exec"
 import fs from "fs"
 import path from "path"
 import { prompt } from "./prompt"
-import { line, lineAfter, logger } from "./logger"
+import { line, logger } from "./logger"
 import chalk from "chalk"
 import { s } from "./snippets"
+import { config } from "./config"
 
 export const getCurrentBranch = async () => {
     const { stdout } = await exec("git rev-parse --abbrev-ref HEAD")
-
+    
     return stdout.trim()
+}
+
+export const getWorkingBranches = async () => {
+    const { stdout } = await exec("git branch")
+
+    const branches = stdout.
+        trim()
+        .split("\n")
+        .map(b => b.replace("*", "").trim())
+        .filter(b => b !== config.mainBranch)
+
+    return branches
+}
+
+export const mergeBranchToMain = async (currentBranch: string, targetBranch: string, preferFastForward: boolean, deleteOnSuccess: boolean) => {
+    // Checkout mainBranch if not there initially
+    if (currentBranch !== config.mainBranch) {
+        logger.log("Checking out " + config.mainBranch)
+        await exec(`git checkout ${config.mainBranch}`)
+    }
+
+    // Now in mainBranch
+    await spawn(`git merge ${targetBranch} ${preferFastForward ? "--ff" : "--no-ff "}`)
+        .then(async () => {
+            if (deleteOnSuccess) await exec(`git branch -d ${targetBranch}`)
+        })
+        .finally(async () => {
+            // Return back to current branch if checked out main and branch was not deleted
+            if (!deleteOnSuccess && currentBranch !== config.mainBranch) await exec(`git checkout ${currentBranch}`)
+        })
 }
 
 export const isMergeContext = () => {
@@ -52,11 +83,13 @@ export const pushWithTags = async () => {
     } catch (err: any) {
         if (!err.stderr.includes("no upstream branch")) throw err
 
-        await setUpstreamBranch().catch(() => {
+        await setUpstreamBranch().catch((e) => {
             logger.log(
                 line("Unable to set upstream branch") + 
                 line("Run", chalk.green(s(`git push --set-upstream origin ${currentBranch} --follow-tags`)), "to push changes")
             )
+
+            throw(e)
         })
 
         await push

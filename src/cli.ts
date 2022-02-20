@@ -2,6 +2,7 @@
 
 import { Command } from "commander";
 import { commit } from "./commands/commit";
+import { merge } from "./commands/merge";
 import { release } from "./commands/release";
 import { config } from "./utils/config";
 
@@ -23,6 +24,16 @@ program
         await commit()
     })
 
+// Merge
+program
+    .command("merge")
+    .option("-p --prefer-ff", "see the commands that would run without affecting any files", false)
+    .option("-d --dry-run", "see the commands that would run without affecting any files", false)
+    .action(async (options) => {
+        await merge({dryRun: options.dryRun, preferFastForward: options.preferFf})
+    })
+
+// Release
 program
     .command("release")
     .option("-P --no-push", "prevent pushing changes and tags to remote")

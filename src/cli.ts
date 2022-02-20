@@ -25,8 +25,8 @@ program
 
 program
     .command("release")
+    .option("-P --no-push", "prevent pushing changes and tags to remote")
     .option("-d --dry-run", "see the commands that would run without affecting any files", false)
-    .option("--no-push", "prevent pushing changes and tags to remote")
     .action(async (options) => {
         await release({dryRun: options.dryRun, push: options.push})
     })

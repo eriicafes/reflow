@@ -11,6 +11,6 @@ export const config = {
     version: packageJson.version as string,
     description: packageJson.description as string,
     delimeter: "/",
-    mainBranch: "fyb",
+    mainBranch: "main",
     allowedBranches: ["feature", "fix", "chore", "refactor", "build", "style", "docs", "test"] as const
 }

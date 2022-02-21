@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.5](https://github.com/eriicafes/reflow/compare/v0.1.4...v0.1.5) (2022-02-21)
+
+
+### Features
+
+* handled case of a merge conflict where the post-merge hook is not called ([95dc335](https://github.com/eriicafes/reflow/commit/95dc335ccfd14cd518aefef061edc214bb41dec3))
+
 ### [0.1.4](https://github.com/eriicafes/reflow/compare/v0.1.3...v0.1.4) (2022-02-20)
 
 

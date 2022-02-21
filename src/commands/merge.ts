@@ -57,12 +57,15 @@ export const merge = async ({dryRun, preferFastForward}: MergeOptions) => {
                     type: "confirm",
                     name: "cleanup",
                     message: "Delete this branch after a successful merge",
+                    when: (ctx) => ctx.proceed
                 }
             ])
 
-            logger.log(line() + line("Merging", branch, "into", config.mainBranch, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
+            if (proceed) {
+                logger.log(line() + line("Merging", branch, "into", config.mainBranch, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
 
-            if(proceed && !dryRun) await mergeBranchToMain(branch, branch, preferFastForward, cleanup)
+                if(!dryRun) await mergeBranchToMain(branch, branch, preferFastForward, cleanup)
+            }
         } 
     } catch (err: any) {
         logger.error(err.message)

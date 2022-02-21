@@ -95,3 +95,16 @@ export const pushWithTags = async () => {
         await push
     }
 }
+
+export const gitDescribeTags = async () => {
+
+    const {stdout: gitDescribe} = await exec("git describe --tags")
+
+    const [lastTag, commitsAfterTag, latestCommit] = gitDescribe.trim().split("-") as [string, string?, string?]
+
+    return {
+        lastTag, 
+        latestCommit: latestCommit ? latestCommit.slice(1) : undefined,
+        commitsAfterTag: parseInt(commitsAfterTag || "0")
+    }
+}

@@ -1,6 +1,6 @@
 import chalk from "chalk"
 import { config } from "../utils/config"
-import { getCurrentBranch, isMergeContext, pushWithTags } from "../utils/git"
+import { gitDescribeTags, getCurrentBranch, isMergeContext, pushWithTags } from "../utils/git"
 import { line, lineAfter, logger } from "../utils/logger"
 import standardVersion from "standard-version"
 import { s } from "../utils/snippets"
@@ -30,6 +30,10 @@ export const release = async ({dryRun, push}: ReleaseOptions) => {
             chalk.blueBright(branch),
             dryRun ? chalk.bold.yellow("[Dry Run]") : "")
         )
+
+        const {lastTag, commitsAfterTag} = await gitDescribeTags()
+
+        if (commitsAfterTag === 0) throw new Error(`Duplicate release aborted, already released ${chalk.bold(lastTag)}`)
 
         await standardVersion({
             // @ts-ignore

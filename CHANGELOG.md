@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.7](https://github.com/eriicafes/reflow/compare/v0.1.6...v0.1.7) (2022-02-21)
+
+
+### Features
+
+* stop duplicate releases by checking number of commits after the latest tag ([3119bff](https://github.com/eriicafes/reflow/commit/3119bffb8aa4314569328eb09939b36abf1287bd))
+
 ### [0.1.6](https://github.com/eriicafes/reflow/compare/v0.1.5...v0.1.6) (2022-02-21)
 
 

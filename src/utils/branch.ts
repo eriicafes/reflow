@@ -1,6 +1,6 @@
-import {config} from "./config"
+import { config } from "./config"
 import chalk from "chalk"
-import {line, lineAfter} from "./logger"
+import {line, lineAfter } from "./logger"
 import { snippets } from "./snippets"
 
 const randomBranch = () => {
@@ -13,8 +13,21 @@ const delimeterExample = chalk.blue(`'${config.delimeter}'`)
 
 const branchExample = chalk.blue(`(eg. ${randomBranch()})`)
 
-const isValidBranch = <T extends U, U>(branches: ReadonlyArray<T>, type: U): type is T  => {
-    if (branches.includes(type as T)) return true
+type AllowedBranches = typeof config.allowedBranches[number]
+
+export const isValidBranchType = <A extends AllowedBranches>(type: string, allowedBranchTypes?: ReadonlyArray<A>): type is A  => {
+    if ((allowedBranchTypes || config.allowedBranches).includes(type as A)) return true
+
+    return false
+}
+
+export const isValidBranch = <A extends AllowedBranches>(branch: string | undefined, allowedBranchTypes?: ReadonlyArray<A>): branch is `${A}/${string}` => {
+    if (!branch) return false
+
+    const [type, ...details] = branch.split(config.delimeter)
+
+    // Only valid if branch is in the exact format we want and has a valid branch type
+    if (details.length === 1 && isValidBranchType(type, allowedBranchTypes)) return true
 
     return false
 }
@@ -23,6 +36,8 @@ export const parseBranch = (branch: string) => {
     try {
         const [type, ...details] = branch.split(config.delimeter)
 
+        // Give more detailed info why branch is not valid
+        
         if (!details.length) {
             throw new Error(`Commit branch name should contain a ${delimeterExample} to show branch type ${branchExample}`)
         }
@@ -31,7 +46,7 @@ export const parseBranch = (branch: string) => {
             throw new Error(`Commit branch name should contain only one ${delimeterExample} ${branchExample}`)
         }
 
-        if (!isValidBranch(config.allowedBranches, type)) {
+        if (!isValidBranchType(type)) {
             throw new Error()
         }
 

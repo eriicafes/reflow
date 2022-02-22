@@ -1,6 +1,7 @@
 #!/usr/bin/env node
 
 import { Command } from "commander";
+import { branch } from "./commands/branch";
 import { commit } from "./commands/commit";
 import { merge } from "./commands/merge";
 import { release } from "./commands/release";
@@ -16,6 +17,15 @@ program
 // Default
 program
     .action(() => console.log("Yayy!"))
+
+// Branch
+program
+    .command("branch [name] [parent]")
+    .option("-r --rename", "see the commands that would run without affecting any files", false)
+    .action(async (name, parent, options) => {
+        await branch({name, parent, rename: options.rename})
+    })
+
 
 // Commit
 program

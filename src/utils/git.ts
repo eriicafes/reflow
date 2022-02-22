@@ -25,6 +25,14 @@ export const getWorkingBranches = async () => {
     return branches
 }
 
+export const checkoutNewBranch = async (name: string, parent?: string) => {
+    await exec(`git checkout -b ${name}` + (parent ? ` ${parent}` : ""))
+}
+
+export const renameCurrentBranch = async (name: string) => {
+    await exec(`git branch -m ${name}`)
+}
+
 export const mergeBranchToMain = async (currentBranch: string, targetBranch: string, preferFastForward: boolean, deleteOnSuccess: boolean) => {
     // Checkout mainBranch if not there initially
     if (currentBranch !== config.mainBranch) {

@@ -25,6 +25,22 @@ export const getWorkingBranches = async () => {
     return branches
 }
 
+export const checkoutBranch = async (name: string) => {
+    await exec(`git checkout ${name}`)
+}
+
+export const checkoutNewBranch = async (name: string, parent?: string) => {
+    await exec(`git checkout -b ${name}` + (parent ? ` ${parent}` : ""))
+}
+
+export const renameCurrentBranch = async (name: string) => {
+    await exec(`git branch -m ${name}`)
+}
+
+export const deleteBranch = async (name: string) => {
+    await exec(`git branch -d ${name}`)
+}
+
 export const mergeBranchToMain = async (currentBranch: string, targetBranch: string, preferFastForward: boolean, deleteOnSuccess: boolean) => {
     // Checkout mainBranch if not there initially
     if (currentBranch !== config.mainBranch) {
@@ -35,7 +51,7 @@ export const mergeBranchToMain = async (currentBranch: string, targetBranch: str
     // Now in mainBranch
     await spawn(`git merge ${targetBranch} ${preferFastForward ? "--ff-only" : "--no-ff"}`)
         .then(async () => {
-            if (deleteOnSuccess) await exec(`git branch -d ${targetBranch}`)
+            if (deleteOnSuccess) await deleteBranch(targetBranch)
         })
         .finally(async () => {
             // Return back to current branch if checked out main and branch was not deleted

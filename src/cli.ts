@@ -23,7 +23,7 @@ program
 program
     .command("branch [name] [parent]")
     .description("Checkout a new branch or rename current branch")
-    .option("-r --rename", "see the commands that would run without affecting any files", false)
+    .option("-r --rename", "rename branch", false)
     .action(async (name, parent, options) => {
         await branch({name, parent, rename: options.rename})
     })

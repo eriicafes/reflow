@@ -2,6 +2,7 @@
 
 import { Command } from "commander";
 import { branch } from "./commands/branch";
+import { checkout } from "./commands/checkout";
 import { commit } from "./commands/commit";
 import { merge } from "./commands/merge";
 import { release } from "./commands/release";
@@ -26,6 +27,12 @@ program
         await branch({name, parent, rename: options.rename})
     })
 
+// Checkout
+program
+    .command("checkout [type]")
+    .action(async (type) => {
+        await checkout({type})
+    })
 
 // Commit
 program

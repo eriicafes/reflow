@@ -25,6 +25,10 @@ export const getWorkingBranches = async () => {
     return branches
 }
 
+export const checkoutBranch = async (name: string) => {
+    await exec(`git checkout ${name}`)
+}
+
 export const checkoutNewBranch = async (name: string, parent?: string) => {
     await exec(`git checkout -b ${name}` + (parent ? ` ${parent}` : ""))
 }

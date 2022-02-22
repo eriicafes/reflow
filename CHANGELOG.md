@@ -2,6 +2,21 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.1.8](https://github.com/eriicafes/reflow/compare/v0.1.7...v0.1.8) (2022-02-22)
+
+
+### Features
+
+* added branch program and refactored some branch functions ([a0ff7af](https://github.com/eriicafes/reflow/commit/a0ff7affd0393db8b6c91117b227a35a655b0df5))
+* added branch program and refactored some branch functions ([9b4f765](https://github.com/eriicafes/reflow/commit/9b4f76531dfd50ee6103bbb7371b78b21ebe9c33))
+* added checkout program ([176eb7e](https://github.com/eriicafes/reflow/commit/176eb7e906a7e52e3e20e0fb25d6cd7d9e478cb3))
+* added proper descriptions to programs ([d884ef2](https://github.com/eriicafes/reflow/commit/d884ef2af4731fabeef2c69664d1c4a5e789f580))
+
+
+### Bug Fixes
+
+* fix branch program 'rename' option message and refactored git delete branch ([a8310f5](https://github.com/eriicafes/reflow/commit/a8310f5b2cd8a395560c6c1288013cfc7bddc7ca))
+
 ### [0.1.7](https://github.com/eriicafes/reflow/compare/v0.1.6...v0.1.7) (2022-02-21)
 
 

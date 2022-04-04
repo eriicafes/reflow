@@ -41,7 +41,11 @@ export const deleteBranch = async (name: string) => {
     await exec(`git branch -d ${name}`)
 }
 
-export const mergeBranchToMain = async (currentBranch: string, targetBranch: string, preferFastForward: boolean, deleteOnSuccess: boolean) => {
+export const mergeBranchToMain = async (
+    targetBranch: string,
+    options: { preferFastForward: boolean, deleteOnSuccess: boolean },
+    currentBranch = config.mainBranch
+) => {
     // Checkout mainBranch if not there initially
     if (currentBranch !== config.mainBranch) {
         logger.log("Checking out " + config.mainBranch)
@@ -49,14 +53,12 @@ export const mergeBranchToMain = async (currentBranch: string, targetBranch: str
     }
 
     // Now in mainBranch
-    await spawn(`git merge ${targetBranch} ${preferFastForward ? "--ff-only" : "--no-ff"}`)
-        .then(async () => {
-            if (deleteOnSuccess) await deleteBranch(targetBranch)
-        })
-        .finally(async () => {
-            // Return back to current branch if checked out main and branch was not deleted
-            if (!deleteOnSuccess && currentBranch !== config.mainBranch) await exec(`git checkout ${currentBranch}`)
-        })
+    await spawn(`git merge ${targetBranch} ${options.preferFastForward ? "--ff-only" : "--no-ff"}`)
+
+    if (options.deleteOnSuccess) await deleteBranch(targetBranch)
+    
+    // Return back to current branch if checked out main and branch was not deleted
+    if (!options.deleteOnSuccess && currentBranch !== config.mainBranch) await exec(`git checkout ${currentBranch}`)
 }
 
 export const isMergeContext = () => {

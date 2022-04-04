@@ -1,27 +1,37 @@
 import chalk from "chalk"
 import { config } from "../utils/config"
-import { gitDescribeTags, getCurrentBranch, isMergeContext, pushWithTags } from "../utils/git"
+import { gitDescribeTags, getCurrentBranch, pushWithTags } from "../utils/git"
 import { line, lineAfter, logger } from "../utils/logger"
-import standardVersion from "standard-version"
 import { s } from "../utils/snippets"
+import { bumpVersion } from "../utils/bump"
+import { isCI } from "ci-info"
 
 type ReleaseOptions = {
-    dryRun: boolean,
+    dryRun: boolean
     push: boolean
+    force: boolean
+    as?: string
+    preRelease?: boolean
+    preReleaseTag?: string
 }
 
-export const release = async ({dryRun, push}: ReleaseOptions) => {
+export const release = async ({dryRun, push, force, as, preRelease, preReleaseTag}: ReleaseOptions) => {
     try {
         const branch = await getCurrentBranch()
         
-        if (branch !== config.mainBranch) {
-
-            if (isMergeContext()) process.exit(0) // release was called (by post-merge hook) during merge to another branch
-
-            // error since release was called (manually) in another branch
+        if (branch !== config.branch.main) {
+            // throw error if release is called in another branch
             throw new Error(
-                lineAfter("Unsupported release branch", chalk.yellow(`<${branch}>`) + ":") +
-                line("Consider merging this branch to", `'${config.mainBranch}'`, "before relaseing")
+                lineAfter("Unsupported release branch", chalk.yellow(`${branch}`) + ":") +
+                line("Consider merging this branch to", `'${config.branch.main}'`, "before releasing")
+            )
+        }
+
+        if (!isCI && !force) {
+            // throw error if release is called in non-ci environment
+            throw new Error(
+                lineAfter("Unsupported environment:") +
+                line("Release should be run in a CI environment. To override the default behaviour retry release with the -f option")
             )
         }
 
@@ -35,18 +45,12 @@ export const release = async ({dryRun, push}: ReleaseOptions) => {
 
         if (commitsAfterTag === 0) throw new Error(`Duplicate release aborted, already released ${chalk.bold(lastTag)}`)
 
-        await standardVersion({
-            // @ts-ignore
-            // A bug in standard-version argument parsing with yargs (Negating Boolean Arguments '--no-verify') has led the option 'noVerify' to be specified instead of 'verify'
-            verify: false,
-            commitAll: true,
-            dryRun,
-        })
+        await bumpVersion({dryRun, releaseAs: as, preRelease, preReleaseTag})
 
         if (push) {
             logger.log(
                 line() + line(
-                    chalk.magentaBright("Pushing changes and tags..."),
+                    chalk.magentaBright("Pushing changes with tags..."),
                     dryRun ? chalk.bold.yellow("[Dry Run]") : ""
                 )
             )

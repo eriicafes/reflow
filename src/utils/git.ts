@@ -20,7 +20,7 @@ export const getWorkingBranches = async () => {
         trim()
         .split("\n")
         .map(b => b.replace("*", "").trim())
-        .filter(b => b !== config.mainBranch)
+        .filter(b => b !== config.branch.main)
 
     return branches
 }
@@ -41,24 +41,39 @@ export const deleteBranch = async (name: string) => {
     await exec(`git branch -d ${name}`)
 }
 
+export const pullAndRebaseMainFromRemote = async () => {
+    await checkoutBranch(config.branch.main)
+    await exec(`git pull --rebase`)
+}
+
+export const pullAndRebaseFromMain = async (branch: string) => {
+    await pullAndRebaseMainFromRemote()
+
+    await exec(`git rebase ${config.branch.main} ${branch}`)
+}
+
 export const mergeBranchToMain = async (
     targetBranch: string,
     options: { preferFastForward: boolean, deleteOnSuccess: boolean },
-    currentBranch = config.mainBranch
 ) => {
-    // Checkout mainBranch if not there initially
-    if (currentBranch !== config.mainBranch) {
-        logger.log("Checking out " + config.mainBranch)
-        await exec(`git checkout ${config.mainBranch}`)
+    // prepare merge from main
+    await pullAndRebaseFromMain(targetBranch)
+
+    const currentBranch = await getCurrentBranch()
+
+    // Checkout main branch if not there initially
+    if (currentBranch !== config.branch.main) {
+        logger.log("Checking out " + config.branch.main)
+        await exec(`git checkout ${config.branch.main}`)
     }
 
-    // Now in mainBranch
+    // Now in main branch
     await spawn(`git merge ${targetBranch} ${options.preferFastForward ? "--ff-only" : "--no-ff"}`)
 
     if (options.deleteOnSuccess) await deleteBranch(targetBranch)
     
     // Return back to current branch if checked out main and branch was not deleted
-    if (!options.deleteOnSuccess && currentBranch !== config.mainBranch) await exec(`git checkout ${currentBranch}`)
+    if (!options.deleteOnSuccess && currentBranch !== config.branch.main) await exec(`git checkout ${currentBranch}`)
 }
 
 export const isMergeContext = () => {

@@ -1,0 +1,9 @@
+{
+    "branch": {
+        "main": "test"
+    },
+    "scripts": {
+        "prebump": "echo 'prebumping'"
+    },
+    "tagPrefix": "@reflow"
+}

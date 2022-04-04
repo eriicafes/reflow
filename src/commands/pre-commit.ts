@@ -5,12 +5,12 @@ import chalk from "chalk"
 import { config } from "../utils/config"
 import { snippets } from "../utils/snippets"
 
-export const commit = async () => {
+export const preCommit = async () => {
     try {
         const branch = await getCurrentBranch()
         
-        // Check if merge conflict being resolved in the mainBranch
-        if (branch === config.mainBranch && isMergeContext()) {
+        // Check if a merge conflict is being resolved in the main branch
+        if (branch === config.branch.main && isMergeContext()) {
             
             logger.log(
                 lineAfter("Unable to resolve merge automatically") + 

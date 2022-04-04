@@ -23,7 +23,7 @@ export const branch = async ({name, parent, rename}: BranchOptions) => {
                     type: "list",
                     name: "type",
                     message: rename ? "What type of branch is this?" : "What are you going to be working on?",
-                    choices: config.allowedBranches
+                    choices: config.branch.allowed
                 },
                 {
                     name: "promptName",

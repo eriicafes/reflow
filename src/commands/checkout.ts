@@ -1,8 +1,7 @@
-import { isValidBranch, isValidBranchType } from "../utils/branch"
 import { line, logger } from "../utils/logger"
 import { config } from "../utils/config"
 import { prompt } from "../utils/prompt"
-import { checkoutBranch, checkoutNewBranch, getWorkingBranches, renameCurrentBranch } from "../utils/git"
+import { checkoutBranch, getWorkingBranches } from "../utils/git"
 import chalk from "chalk"
 
 type CheckoutOptions = {
@@ -16,12 +15,12 @@ export const checkout = async ({type}: CheckoutOptions) => {
         // Filter the branches if type was provided
         if (type) branches = branches.filter(b => b.startsWith(type))
 
-        // If no branches found and type is not the mainBranch, exit with a proper message
-        if (!branches.length && type !== config.mainBranch) {
+        // If no branches found and type is not the main branch, exit with a proper message
+        if (!branches.length && type !== config.branch.main) {
 
             if (type) {
-                // Check is any allowed branches was matched
-                const possibleBranches = config.allowedBranches.filter(b => b.startsWith(type))
+                // Check if any allowed branches was matched
+                const possibleBranches = config.branch.allowed.filter(b => b.startsWith(type))
 
                 // Fail only when filter result is empty as a result of an unknown branch type
                 // This happens when the provided type does not match any allowed branch
@@ -44,13 +43,13 @@ export const checkout = async ({type}: CheckoutOptions) => {
                 name: "branch",
                 message: "Which branch would you like to checkout",
                 // Append the main branch to the list only if type was not provided
-                choices: (type ? [] : [config.mainBranch]).concat(branches),
-                // Prompt unless provided type is mainBranch
-                when: () => type !== config.mainBranch,
+                choices: (type ? [] : [config.branch.main]).concat(branches),
+                // Prompt unless provided type is main branch
+                when: () => type !== config.branch.main,
             }
         ])
 
-        await checkoutBranch(branch || config.mainBranch)
+        await checkoutBranch(branch || config.branch.main)
 
         process.exit()
     } catch (err: any) {

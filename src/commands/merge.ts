@@ -21,7 +21,7 @@ export const merge = async ({dryRun, preferFastForward}: MergeOptions) => {
                 process.exit()
             }
 
-            const {targetBranch, proceed, cleanup} = await prompt([
+            const {targetBranch, proceed, deleteOnSuccess} = await prompt([
                 {
                     type: "list",
                     name: "targetBranch",
@@ -37,17 +37,17 @@ export const merge = async ({dryRun, preferFastForward}: MergeOptions) => {
                 },
                 {
                     type: "confirm",
-                    name: "cleanup",
+                    name: "deleteOnSuccess",
                     message: "Delete this branch after a successful merge",
                 }
             ])
 
             logger.log(line() + line("Merging", targetBranch, "into", config.mainBranch, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
 
-            if (proceed && !dryRun) await mergeBranchToMain(branch, targetBranch, preferFastForward, cleanup)
+            if (proceed && !dryRun) await mergeBranchToMain(targetBranch, { preferFastForward, deleteOnSuccess })
 
         } else {
-            const {proceed, cleanup} = await prompt([
+            const {proceed, deleteOnSuccess} = await prompt([
                 {
                     type: "confirm",
                     name: "proceed",
@@ -55,7 +55,7 @@ export const merge = async ({dryRun, preferFastForward}: MergeOptions) => {
                 },
                 {
                     type: "confirm",
-                    name: "cleanup",
+                    name: "deleteOnSuccess",
                     message: "Delete this branch after a successful merge",
                     when: (ctx) => ctx.proceed
                 }
@@ -64,7 +64,7 @@ export const merge = async ({dryRun, preferFastForward}: MergeOptions) => {
             if (proceed) {
                 logger.log(line() + line("Merging", branch, "into", config.mainBranch, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
 
-                if(!dryRun) await mergeBranchToMain(branch, branch, preferFastForward, cleanup)
+                if(!dryRun) await mergeBranchToMain(branch, { preferFastForward, deleteOnSuccess }, branch)
             }
         } 
     } catch (err: any) {

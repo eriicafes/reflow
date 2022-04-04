@@ -13,11 +13,8 @@ const program = new Command()
 program
     .name(config.name)
     .description(config.description)
-    .version(config.version);
-
-// Default
-program
-    .action(() => console.log("Yayy!"))
+    .version(config.version)
+    .version(config.version, "-v", "alias for -v, --version")
 
 // Branch
 program

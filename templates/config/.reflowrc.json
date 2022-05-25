@@ -1,0 +1,13 @@
+{
+  "allowedBranches": [
+    "feature",
+    "fix",
+    "chore",
+    "refactor",
+    "build",
+    "style",
+    "docs",
+    "test"
+  ],
+  "keepMergeCommits": true
+}

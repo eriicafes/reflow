@@ -1,72 +1,85 @@
-import chalk from "chalk"
-import { config } from "../utils/config"
-import { gitDescribeTags, getCurrentBranch, pushWithTags } from "../utils/git"
-import { line, lineAfter, logger } from "../utils/logger"
-import { s } from "../utils/snippets"
-import { bumpVersion } from "../utils/bump"
-import { isCI } from "ci-info"
+import chalk from "chalk";
+import { getCurrentBranch, pushWithTags } from "../utils/git";
+import { bumpVersion } from "../utils/bump";
+import { BaseOptions, Program, SubCommand } from "./base";
+import { InvalidOptionArgumentError } from "commander";
+import { validateReleaseBranch } from "../utils/branch";
+import { quot, snip } from "../utils/snippets";
+import { createLoader } from "../utils/loader";
 
-type ReleaseOptions = {
-    dryRun: boolean
-    push: boolean
-    force: boolean
-    as?: string
-    preRelease?: boolean
-    preReleaseTag?: string
+export interface Options extends BaseOptions {
+  force: boolean;
+  push: boolean;
+  as?: string;
+  preRelease?: true;
+  tag?: string;
 }
 
-export const release = async ({dryRun, push, force, as, preRelease, preReleaseTag}: ReleaseOptions) => {
-    try {
-        const branch = await getCurrentBranch()
-        
-        if (branch !== config.branch.main) {
-            // throw error if release is called in another branch
-            throw new Error(
-                lineAfter("Unsupported release branch", chalk.yellow(`${branch}`) + ":") +
-                line("Consider merging this branch to", `'${config.branch.main}'`, "before releasing")
-            )
-        }
+export class ReleaseCommand extends SubCommand {
+  public command = "release";
 
-        if (!isCI && !force) {
-            // throw error if release is called in non-ci environment
-            throw new Error(
-                lineAfter("Unsupported environment:") +
-                line("Release should be run in a CI environment. To override the default behaviour retry release with the -f option")
-            )
-        }
+  public setup(program: Program) {
+    return program
+      .description("make a release (bump version, tag commit and push changes)")
+      .option("-f --force", "force release when not in a CI environment", false)
+      .option(
+        "-a --as <type>",
+        "release with a specific version type",
+        this.parseReleaseType
+      )
+      .option("--no-push", "prevent pushing changes and tags to remote");
+  }
 
-        logger.log(
-            line(chalk.magentaBright("Releasing:"),
-            chalk.blueBright(branch),
-            dryRun ? chalk.bold.yellow("[Dry Run]") : "")
-        )
+  public async action(options: Options) {
+    const branch = await getCurrentBranch();
 
-        const {lastTag, commitsAfterTag} = await gitDescribeTags()
+    // check the current branch before releasing
+    validateReleaseBranch(branch, options.force);
 
-        if (commitsAfterTag === 0) throw new Error(`Duplicate release aborted, already released ${chalk.bold(lastTag)}`)
-
-        await bumpVersion({dryRun, releaseAs: as, preRelease, preReleaseTag})
-
-        if (push) {
-            logger.log(
-                line() + line(
-                    chalk.magentaBright("Pushing changes with tags..."),
-                    dryRun ? chalk.bold.yellow("[Dry Run]") : ""
-                )
-            )
-
-            if (!dryRun) await pushWithTags()
-        } else {
-            logger.log(
-                line("Run", chalk.green(s("git push --follow-tags")), "to push changes")
-            )
-        }
-
-        process.exit()
-
-    } catch (err: any) {
-        logger.error(err.message)
-        
-        process.exit(1)
+    // bump version
+    if (options.preRelease) {
+      await bumpVersion({
+        dryRun: options.dryRun,
+        releaseAs: options.as,
+        preRelease: options.preRelease,
+        preReleaseTag: options.tag,
+      });
+    } else {
+      await bumpVersion({
+        dryRun: options.dryRun,
+        releaseAs: options.as,
+      });
     }
+
+    // push changes
+    await this.push(options.push, options.force, options.dryRun);
+  }
+
+  private async push(
+    push: boolean,
+    force: boolean,
+    dryRun: boolean | undefined
+  ) {
+    const loader = createLoader("pushing changes with tags").start();
+
+    if (push) {
+      await pushWithTags(force, dryRun);
+      loader.succeed("successfully pushed changes and tags");
+    } else {
+      loader.info(`run ${chalk.green(snip("reflow push"))} to push changes`);
+    }
+  }
+
+  protected parseReleaseType(value: string) {
+    const validReleaseTypes = ["major", "minor", "patch"];
+
+    if (!validReleaseTypes.includes(value)) {
+      throw new InvalidOptionArgumentError(
+        `${quot(value)} is not one of ${chalk.green(
+          validReleaseTypes.join(", ")
+        )}`
+      );
+    }
+    return value;
+  }
 }

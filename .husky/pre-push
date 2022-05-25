@@ -1,5 +1,4 @@
 #!/bin/sh
 . "$(dirname "$0")/_/husky.sh"
 
-echo "pre pushing"
-exit 1
+node lib/cli pre-push

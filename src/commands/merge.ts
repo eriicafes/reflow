@@ -1,74 +1,105 @@
-import chalk from "chalk"
-import { config } from "../utils/config"
-import { getWorkingBranches, getCurrentBranch, mergeBranchToMain, pullAndRebaseFromMain } from "../utils/git"
-import { line, logger } from "../utils/logger"
-import { prompt } from "../utils/prompt"
+import { config } from "../utils/config";
+import {
+  getWorkingBranches,
+  getCurrentBranch,
+  mergeBranchToMain,
+} from "../utils/git";
+import { logger } from "../utils/logger";
+import { prompt } from "../utils/prompt";
+import { BaseOptions, Program, SubCommand } from "./base";
 
-type MergeOptions = {
-    dryRun: boolean,
-    preferFastForward: boolean
+interface Options extends BaseOptions {
+  preferFastForward: boolean;
 }
 
-export const merge = async ({dryRun, preferFastForward}: MergeOptions) => {
-    try {
-        const branch = await getCurrentBranch()
+export class MergeCommand extends SubCommand {
+  public command = "merge";
 
-        if (branch === config.branch.main) {
-            const workingBranches = await getWorkingBranches()
+  public setup(program: Program) {
+    return program
+      .description("merge working branch to main branch")
+      .option("--prefer-ff", "always perform a fast-foward merge", false);
+  }
 
-            if (!workingBranches.length) {
-                logger.log("No working branches available")
-                process.exit()
-            }
+  public async action(options: Options) {
+    const branch = await getCurrentBranch();
 
-            const {targetBranch, proceed, deleteOnSuccess} = await prompt([
-                {
-                    type: "list",
-                    name: "targetBranch",
-                    message: `Which branch do you want to merge to ${config.branch.main}`,
-                    choices: workingBranches
-                },
-                {
-                    type: "confirm",
-                    name: "proceed",
-                    message(ctx) {
-                        return `Do you really want to merge ${ctx.targetBranch} to ${config.branch.main}`
-                    },
-                },
-                {
-                    type: "confirm",
-                    name: "deleteOnSuccess",
-                    message: "Delete this branch after a successful merge",
-                }
-            ])
+    if (branch === config.mainBranch) {
+      const workingBranches = await getWorkingBranches();
 
-            logger.log(line() + line("Merging", targetBranch, "into", config.branch.main, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
+      if (!workingBranches.length) {
+        logger.log("No working branches available");
+        return;
+      }
 
-            if (proceed && !dryRun) await mergeBranchToMain(targetBranch, { preferFastForward, deleteOnSuccess })
+      const { targetBranch, proceed, deleteOnSuccess } = await prompt([
+        {
+          type: "list",
+          name: "targetBranch",
+          message: `Which branch do you want to merge to ${config.mainBranch}`,
+          choices: workingBranches,
+        },
+        {
+          type: "confirm",
+          name: "proceed",
+          message: (ctx) =>
+            `Do you really want to merge ${ctx.targetBranch} to ${config.mainBranch}`,
+        },
+        {
+          type: "confirm",
+          name: "deleteOnSuccess",
+          message: "Delete this branch after a successful merge",
+          default: false,
+          when: (ctx) => ctx.proceed,
+        },
+      ]);
 
-        } else {
-            const {proceed, deleteOnSuccess} = await prompt([
-                {
-                    type: "confirm",
-                    name: "proceed",
-                    message: `Do you want to merge this branch to ${config.branch.main}`
-                },
-                {
-                    type: "confirm",
-                    name: "deleteOnSuccess",
-                    message: "Delete this branch after a successful merge",
-                    when: (ctx) => ctx.proceed
-                }
-            ])
+      if (proceed)
+        await this.merge({
+          targetBranch,
+          deleteOnSuccess,
+          preferFastForward: options.preferFastForward,
+          dryRun: options.dryRun,
+        });
+    } else {
+      const { proceed, deleteOnSuccess } = await prompt([
+        {
+          type: "confirm",
+          name: "proceed",
+          message: `Do you want to merge ${branch} branch to ${config.mainBranch}`,
+        },
+        {
+          type: "confirm",
+          name: "deleteOnSuccess",
+          message: "Delete this branch after a successful merge",
+          default: false,
+          when: (ctx) => ctx.proceed,
+        },
+      ]);
 
-            logger.log(line() + line("Merging", branch, "into", config.branch.main, dryRun ? chalk.bold.yellow("[Dry Run]") : ""))
-
-            if (proceed && !dryRun) await mergeBranchToMain(branch, { preferFastForward, deleteOnSuccess })
-
-        } 
-    } catch (err: any) {
-        logger.error(err.message)
-        
-        process.exit(1)
+      if (proceed)
+        await this.merge({
+          targetBranch: branch,
+          deleteOnSuccess,
+          preferFastForward: options.preferFastForward,
+          dryRun: options.dryRun,
+        });
     }
+  }
+
+  private async merge(options: {
+    targetBranch: string;
+    deleteOnSuccess: boolean;
+    preferFastForward: boolean;
+    dryRun?: boolean;
+  }) {
+    await mergeBranchToMain(
+      options.targetBranch,
+      {
+        deleteOnSuccess: options.deleteOnSuccess,
+        preferFastForward: options.preferFastForward,
+      },
+      options.dryRun
+    );
+  }
 }

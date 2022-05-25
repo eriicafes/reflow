@@ -1,37 +1,24 @@
-import { getCurrentBranch, isMergeContext } from "../utils/git"
-import {parseBranch} from "../utils/branch"
-import { line, lineAfter, logger } from "../utils/logger"
-import chalk from "chalk"
-import { config } from "../utils/config"
-import { snippets } from "../utils/snippets"
+import { getCurrentBranch } from "../utils/git";
+import { validateCommitBranch } from "../utils/branch";
+import { Program, SubCommand } from "./base";
+import { CliError } from "../utils/error";
 
-export const preCommit = async () => {
+export class PreCommitCommand extends SubCommand {
+  public command = "pre-commit";
+
+  protected allowDryRun = false;
+
+  public setup(program: Program) {
+    return program.description("validate commit branch");
+  }
+
+  public async action() {
+    const branch = await getCurrentBranch();
+
     try {
-        const branch = await getCurrentBranch()
-        
-        // Check if a merge conflict is being resolved in the main branch
-        if (branch === config.branch.main && isMergeContext()) {
-            
-            logger.log(
-                lineAfter("Unable to resolve merge automatically") + 
-                line("Run", chalk.green(snippets.release), "to release changes")
-            )
-
-        } else {
-            // This is a standard commit, go ahead and verify the branch
-            const [type, details] = parseBranch(branch)
-        
-            logger.log(
-                chalk.magentaBright("Committing:"),
-                chalk.blueBright(type),
-                details
-            )
-        }
-    
-        process.exit()
-    } catch (err: any) {
-        logger.error(err.message)
-
-        process.exit(1)
+      validateCommitBranch(branch);
+    } catch (e) {
+      if (!CliError.Info.isInstance(e)) throw e;
     }
+  }
 }

@@ -1,71 +1,157 @@
-import { config } from "./config"
-import chalk from "chalk"
-import {line, lineAfter } from "./logger"
-import { snippets } from "./snippets"
+import { config } from "./config";
+import chalk from "chalk";
+import { CliError } from "./error";
+import { quot, snip } from "./snippets";
+import { isCI } from "ci-info";
+import { createLoader } from "./loader";
+
+export const isValidBranchType = (
+  type: string | undefined,
+  allowedBranchTypes?: string[]
+): type is string => {
+  if (!type) return false;
+  if ((allowedBranchTypes || config.allowedBranches).includes(type))
+    return true;
+  return false;
+};
+
+export const isValidBranch = (
+  branch: string | undefined,
+  allowedBranchTypes?: string[]
+): branch is string => {
+  if (!branch) return false;
+
+  const [type, ...details] = branch.split(config.branchDelimeter);
+
+  // Only valid if branch is in the exact format we want and has a valid branch type
+  if (details.length === 1 && isValidBranchType(type, allowedBranchTypes))
+    return true;
+
+  return false;
+};
 
 const randomBranch = () => {
-    const index = Math.floor(Math.random() * config.branch.allowed.length)
+  const index = Math.floor(Math.random() * config.allowedBranches.length);
+  return (
+    config.allowedBranches[index] +
+    config.branchDelimeter +
+    "details-about-commit"
+  );
+};
 
-    return config.branch.allowed[index] + config.branch.delimeter + "details-about-commit"
-}
-const delimeterExample = chalk.blue(`'${config.branch.delimeter}'`)
-const branchExample = chalk.blue(`(eg. ${randomBranch()})`)
+const branchExample = `eg. ${chalk.cyanBright(quot(randomBranch()))}`;
+const delimeterExample = chalk.cyanBright(quot(config.branchDelimeter));
+const supportedExample = chalk.cyanBright(config.allowedBranches);
 
-type AllowedBranches = typeof config.branch.allowed[number]
+export const validateCommitBranch = (branch: string): [string, string] => {
+  const [type, details, ...unwanted] = branch.split(config.branchDelimeter);
 
-export const isValidBranchType = <A extends AllowedBranches>(type: string, allowedBranchTypes?: ReadonlyArray<A>): type is A  => {
-    if ((allowedBranchTypes || config.branch.allowed).includes(type as A)) return true
+  const loader = createLoader("validating commit branch").start();
 
-    return false
-}
+  // do not allow commits into main branch
+  if (branch === config.mainBranch) {
+    loader.warn(
+      `commits into ${chalk.green(quot(config.mainBranch))} are not allowed`
+    );
+    loader.info(
+      `consider checking out ${chalk.green(
+        quot(config.mainBranch)
+      )} to a working branch`
+    );
+    loader.info(
+      `run ${chalk.green(snip(`reflow branch`))} to checkout a working branch`
+    );
+    loader.fail("commit aborted");
 
-export const isValidBranch = <A extends AllowedBranches>(branch: string | undefined, allowedBranchTypes?: ReadonlyArray<A>): branch is `${A}/${string}` => {
-    if (!branch) return false
+    throw new CliError.Info(
+      `Commits into ${chalk.green(quot(config.mainBranch))} are not allowed`
+    );
+  }
 
-    const [type, ...details] = branch.split(config.branch.delimeter)
+  // do not allow commits from branch without a delimeter in branch name
+  if (!details) {
+    loader.warn(`unsupported commit branch ${chalk.yellow(quot(branch))}`);
+    loader.info(
+      `branch name should contain a ${delimeterExample} to show branch type ${branchExample}`
+    );
+    loader.info(
+      `run ${chalk.green(snip("reflow branch -r"))} to rename this branch`
+    );
+    loader.fail("commit aborted");
 
-    // Only valid if branch is in the exact format we want and has a valid branch type
-    if (details.length === 1 && isValidBranchType(type, allowedBranchTypes)) return true
+    throw new CliError.Info(
+      `Unsupported commit branch ${chalk.yellow(quot(branch))}`
+    );
+  }
 
-    return false
-}
+  // do not allow commits from branch with more than one delimeter in branch name
+  if (unwanted.length) {
+    loader.warn(`unsupported commit branch ${chalk.yellow(quot(branch))}`);
+    loader.info(
+      `branch name should contain only one ${delimeterExample} ${branchExample}`
+    );
+    loader.info(
+      `run ${chalk.green(snip("reflow branch -r"))} to rename this branch`
+    );
+    loader.fail("commit aborted");
 
-export const parseBranch = (branch: string) => {
-    try {
-        const [type, ...details] = branch.split(config.branch.delimeter)
+    throw new CliError.Info(
+      `Unsupported commit branch ${chalk.yellow(quot(branch))}`
+    );
+  }
 
-        // Give more detailed info why branch is not valid
-        
-        if (!details.length) {
-            throw new Error(`Commit branch name should contain a ${delimeterExample} to show branch type ${branchExample}`)
-        }
-        
-        if (details.length > 1) {
-            throw new Error(`Commit branch name should contain only one ${delimeterExample} ${branchExample}`)
-        }
+  // do not allow commits from branch with an unknown type
+  if (!isValidBranchType(type)) {
+    loader.warn(`unsupported commit branch ${chalk.yellow(quot(branch))}`);
+    loader.info(
+      `supported branches are prefixed with: ${supportedExample} ${branchExample}`
+    );
+    loader.info(
+      `run ${chalk.green(snip("reflow branch -r"))} to rename this branch`
+    );
+    loader.fail("commit aborted");
 
-        if (!isValidBranchType(type)) {
-            throw new Error()
-        }
+    throw new CliError.Info(
+      `Unsupported commit branch ${chalk.yellow(quot(branch))}`
+    );
+  }
 
-        return [type, details[0]] as const
+  loader.succeed(`ready to commit ${chalk.cyan(type)} ${details}`);
 
-    } catch (err: any) {
-        throw new Error(
-            lineAfter("Unsupported commit branch", chalk.yellow(`${branch}`) + ":") +
-            (branch === config.branch.main
-                ? lineAfter(`Consider checking out '${config.branch.main}' to a working branch`) +
-                    line ("Run", chalk.green(snippets.branch), "to checkout a working branch")
-                : (err.message ? (lineAfter(err.message)) : "") +
-                    line("Consider renaming this branch before committing") +
-                    line(
-                        "Supported branches are prefixed with:", chalk.blueBright(config.branch.allowed),
-                        err.message ? "" : branchExample
-                    ) +
-                    line() +
-                    line("Run", chalk.green(snippets.branchRename), "to rename this branch")
-            )
+  return [type, details];
+};
 
-        )
-    }
-}
+export const validateReleaseBranch = (branch: string, force: boolean) => {
+  const loader = createLoader("validating release branch").start();
+
+  // only allow release from main branch
+  if (branch !== config.mainBranch) {
+    loader.warn(`unsupported release branch ${chalk.yellow(quot(branch))}`);
+    loader.info(
+      `consider merging this branch to ${chalk.green(
+        quot(config.mainBranch)
+      )} before releasing`
+    );
+    loader.info(
+      `run ${chalk.green(snip("reflow merge"))} to merge this branch`
+    );
+    loader.fail("release aborted");
+
+    throw new CliError.Info(
+      `Unsupported release branch ${chalk.yellow(quot(branch))}`
+    );
+  }
+
+  // throw error if release is called in non-ci environment without force flag
+  if (!isCI && !force) {
+    loader.warn(`unsupported environment`);
+    loader.info(
+      `release should be run in a CI environment, to override the default behaviour retry release with the -f option`
+    );
+    loader.fail("release aborted");
+
+    throw new CliError.Info("Unsupported environment");
+  }
+
+  loader.succeed(`ready to release ${chalk.cyan(branch)}`);
+};

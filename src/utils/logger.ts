@@ -1,16 +1,28 @@
-import chalk from "chalk"
+import chalk from "chalk";
 
-export const logger = {
-    log(...args: any[]) {
-        return console.log(...args)
-    },
-    warn(...args: any[]) {
-        return console.warn(chalk.yellow.bold("WARN"), ...args)
-    },
-    error(...args: any[]) {
-        return console.error(chalk.red.bold("ERROR"), ...args)
-    }
+export class Logger {
+  constructor(public name?: string) {}
+
+  public for(name: string) {
+    return new Logger(this.name ? this.name + ":" + name : name);
+  }
+
+  public log(...args: any[]) {
+    return console.log(...(this.name ? [this.name + ":"] : []).concat(args));
+  }
+
+  public warn(...args: any[]) {
+    return console.warn(
+      chalk.yellow.bold((this.name || "WARN") + ":"),
+      ...args
+    );
+  }
+
+  public error(...args: any[]) {
+    return console.error(chalk.red.bold((this.name || "ERROR") + ":"), ...args);
+  }
 }
 
-export const line = (...args: any) => args.join(" ") + "\n"
-export const lineAfter = (...args: any) => line(...args) + "\n"
+export const logger = new Logger();
+
+export const line = (...args: any) => args.join(" ") + "\n";

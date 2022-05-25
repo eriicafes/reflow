@@ -1,0 +1,30 @@
+name: Version
+
+on:
+  push:
+    branches:
+      - main
+
+jobs:
+  version:
+    name: Version
+
+    runs-on: ubuntu-latest
+
+    # only run on commits to main branch that is not a result of this action
+    if: "!startsWith(github.event.head_commit.message, 'chore(release):')"
+
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v3
+
+      - name: Setup Node
+        uses: actions/setup-node@v3
+        with:
+          node-version: 16
+
+      - name: Bump Version
+        run: |
+          npm ci
+          npx reflow release
+          npx reflow push

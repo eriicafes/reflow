@@ -1,9 +1,9 @@
-import inquirer from "inquirer"
+import { createPromptModule, QuestionCollection } from "inquirer";
 
-const Prompt = inquirer.createPromptModule()
+const Prompt = createPromptModule();
 
-export const prompt = async (questions: inquirer.QuestionCollection) => {
-    const result = await Prompt(questions)
+export const prompt = async (questions: QuestionCollection) => {
+  const result = await Prompt(questions);
 
-    return result
-}
+  return result;
+};

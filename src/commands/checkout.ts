@@ -1,60 +1,70 @@
-import { line, logger } from "../utils/logger"
-import { config } from "../utils/config"
-import { prompt } from "../utils/prompt"
-import { checkoutBranch, getWorkingBranches } from "../utils/git"
-import chalk from "chalk"
+import { config } from "../utils/config";
+import { prompt } from "../utils/prompt";
+import { checkoutBranch, getWorkingBranches } from "../utils/git";
+import { BaseOptions, OptionalArg, Program, SubCommand } from "./base";
+import { CliError } from "../utils/error";
 
-type CheckoutOptions = {
-    type?: string,
-}
+interface Options extends BaseOptions {}
 
-export const checkout = async ({type}: CheckoutOptions) => {
-    try {
-        let branches = await getWorkingBranches()
+export class CheckoutCommand extends SubCommand {
+  public command = "checkout";
 
-        // Filter the branches if type was provided
-        if (type) branches = branches.filter(b => b.startsWith(type))
+  public setup(program: Program) {
+    return program
+      .description("checkout existing branch")
+      .argument("[search]", "filter branches by type");
+  }
 
-        // If no branches found and type is not the main branch, exit with a proper message
-        if (!branches.length && type !== config.branch.main) {
+  public async action(search: OptionalArg, options: Options) {
+    let branches = await getWorkingBranches();
 
-            if (type) {
-                // Check if any allowed branches was matched
-                const possibleBranches = config.branch.allowed.filter(b => b.startsWith(type))
+    // If search matches a branch checkout at once
+    const exactSearch = branches
+      .concat(config.mainBranch)
+      .find((b) => b === search);
+    if (exactSearch) {
+      await checkoutBranch(exactSearch, options.dryRun);
+      return;
+    }
 
-                // Fail only when filter result is empty as a result of an unknown branch type
-                // This happens when the provided type does not match any allowed branch
-                if (!possibleBranches.length) throw new Error(line("Unsupported branch type", chalk.yellow(`'${type}'`)))
+    // Filter the branches by search
+    if (search) branches = branches.filter((b) => b.startsWith(search));
 
-                const last = possibleBranches.pop()
-                const searchedTypes = possibleBranches.length ? (possibleBranches.join(", ") + " or " + last) : last
+    // If no branches found
+    if (!branches.length) {
+      if (search) {
+        // Check if any allowed branches was matched
+        const possibleBranches = config.allowedBranches.filter((b) =>
+          b.startsWith(search)
+        );
 
-                logger.log(`No ${searchedTypes} branches found`)
-            } else {
-                logger.log(`No branch found`)
-            }
-
-            process.exit()
+        // Fail only when filter result is empty as a result of an unknown branch search
+        // This happens when the provided search does not match any allowed branch
+        if (!possibleBranches.length) {
+          throw new CliError.Info(`No ${search} branch found`);
         }
 
-        const {branch} = await prompt([
-            {
-                type: "list",
-                name: "branch",
-                message: "Which branch would you like to checkout",
-                // Append the main branch to the list only if type was not provided
-                choices: (type ? [] : [config.branch.main]).concat(branches),
-                // Prompt unless provided type is main branch
-                when: () => type !== config.branch.main,
-            }
-        ])
+        // Compose search types string
+        const last = possibleBranches.pop();
+        const searchedTypes = possibleBranches.length
+          ? possibleBranches.join(", ") + " or " + last
+          : last;
 
-        await checkoutBranch(branch || config.branch.main)
-
-        process.exit()
-    } catch (err: any) {
-        logger.error(err.message)
-
-        process.exit(1)
+        throw new CliError.Info(`No ${searchedTypes} branch found`);
+      } else {
+        throw new CliError.Info("No working branch found");
+      }
     }
+
+    const { branch } = await prompt([
+      {
+        type: "list",
+        name: "branch",
+        message: "Which branch would you like to checkout",
+        choices: [config.mainBranch, ...branches],
+      },
+    ]);
+
+    await checkoutBranch(branch, options.dryRun);
+  }
 }

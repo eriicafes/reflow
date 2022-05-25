@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.2.1 (2022-05-25)
+
+
+### Features
+
+* add dispatch for publish workflow ([91f8e10](https://github.com/eriicafes/reflow/commit/91f8e1056dcdeeb1a912a07700db09cac3274806))
+
 ## [0.2.0](https://github.com/eriicafes/reflow/compare/v0.1.10...v0.2.0) (2022-05-25)
 
 ### 0.1.10 (2022-05-25)

@@ -63,7 +63,7 @@ export const validateCommitBranch = (branch: string): [string, string] => {
     );
     loader.fail("commit aborted");
 
-    throw new CliError.Info(
+    throw new CliError.Warn(
       `Commits into ${chalk.green(quot(config.mainBranch))} are not allowed`
     );
   }
@@ -79,7 +79,7 @@ export const validateCommitBranch = (branch: string): [string, string] => {
     );
     loader.fail("commit aborted");
 
-    throw new CliError.Info(
+    throw new CliError.Warn(
       `Unsupported commit branch ${chalk.yellow(quot(branch))}`
     );
   }
@@ -95,7 +95,7 @@ export const validateCommitBranch = (branch: string): [string, string] => {
     );
     loader.fail("commit aborted");
 
-    throw new CliError.Info(
+    throw new CliError.Warn(
       `Unsupported commit branch ${chalk.yellow(quot(branch))}`
     );
   }
@@ -111,7 +111,7 @@ export const validateCommitBranch = (branch: string): [string, string] => {
     );
     loader.fail("commit aborted");
 
-    throw new CliError.Info(
+    throw new CliError.Warn(
       `Unsupported commit branch ${chalk.yellow(quot(branch))}`
     );
   }
@@ -137,7 +137,7 @@ export const validateReleaseBranch = (branch: string, force: boolean) => {
     );
     loader.fail("release aborted");
 
-    throw new CliError.Info(
+    throw new CliError.Warn(
       `Unsupported release branch ${chalk.yellow(quot(branch))}`
     );
   }
@@ -150,7 +150,7 @@ export const validateReleaseBranch = (branch: string, force: boolean) => {
     );
     loader.fail("release aborted");
 
-    throw new CliError.Info("Unsupported environment");
+    throw new CliError.Warn("Unsupported environment");
   }
 
   loader.succeed(`ready to release ${chalk.cyan(branch)}`);

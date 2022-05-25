@@ -25,7 +25,5 @@ export class CommitCommand extends SubCommand {
       },
       process.argv
     );
-
-    console.log("after commit");
   }
 }

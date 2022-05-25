@@ -26,5 +26,6 @@ jobs:
       - name: Bump Version
         run: |
           npm ci
-          npx reflow release
-          npx reflow push
+          npm run build
+          npm start -- release
+          npm start -- push

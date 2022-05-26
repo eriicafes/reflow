@@ -1,8 +1,10 @@
+
 # Reflow 🚀
 
 ### An opinionated but slightly configurable Git workflow tool 🚀.
 
 Reflow is aimed at reducing the complexity in setting up a proper dev environment for a typescript project.
+
 
 ## Features
 
@@ -16,6 +18,7 @@ Reflow is aimed at reducing the complexity in setting up a proper dev environmen
 - Bump versions with [Standard Version](https://github.com/conventional-changelog/standard-version)
 - CI/CD with [GitHub Actions](https://github.com/features/actions)
 
+
 ## Installation
 
 #### Install locally:
@@ -25,7 +28,6 @@ npm install @eriicafes/reflow
 ```
 
 And initialise:
-
 ```bash
 npx reflow init
 ```
@@ -39,13 +41,11 @@ npm install @eriicafes/reflow
 ```
 
 And initialise:
-
 ```bash
 reflow init
 ```
 
 Global installation is preferred as reflow binary requires a local installation and will always run the locally binary when neccessary.
-
 ## Usage/Examples
 
 Examples below assume you have both a global installation and a local installation, for local installation only you will have to prefix the command with `npx` ie:
@@ -54,7 +54,7 @@ Examples below assume you have both a global installation and a local installati
 npx reflow
 ```
 
-### Usage
+or
 
 ```bash
 reflow
@@ -65,7 +65,6 @@ Nearly all commands have a `-d or --dry-run` flag useful to see the commands tha
 Command arguments in square brackets `[]` are optional while those in angle brackets `<>` are required.
 
 ### Initialise reflow workspace
-
 ```bash
 reflow init
 
@@ -164,8 +163,8 @@ for example if version is at 0.1.0 and we want to make a prerelease with an alph
 ```bash
 reflow prerelease -t alpha --as minor
 ```
-
 this will bump the version from 0.1.0 to 0.2.0-alpha.0
+
 
 ### Generate Files
 
@@ -179,10 +178,23 @@ Options:
    -a --all      generate all template files
 ```
 
+
+### Actions (github actions)
+When you run `reflow init` a `test.yml` workflow will be generated, which will run tests and build using `npm test` and `npm run build` respectively.
+All actions are listed below:
+
+- test.yml (run tests and build)
+- version.yml (bump version and push new update with tags) requires a **VERSION_TOKEN** secret containing a Github Personal Access Token with repo permissions
+- release.yml (triggered by version.yml workflow, creates a draft github release)
+- publish.yml (triggered by release.yml workflow, publishes package to NPM) requires an **NPM_TOKEN** secret containing an NPM Access Token
+
+All actions can be modified to as needed
 ## Contributing
 
 Pull requests are always welcome!
 
+
 ## Authors
 
 - [@eriicafes](https://www.github.com/eriicafes)
+

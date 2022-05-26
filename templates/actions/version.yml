@@ -17,6 +17,12 @@ jobs:
     steps:
       - name: Checkout
         uses: actions/checkout@v3
+        with:
+          token: ${{ secrets.VERSION_TOKEN }}
+
+      - run: |
+          git config --global user.email "username@domain.com"
+          git config --global user.name "User"
 
       - name: Setup Node
         uses: actions/setup-node@v3

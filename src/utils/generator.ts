@@ -25,11 +25,6 @@ export class TemplateGenerator {
       dest: ".github/workflows/test.yml",
     },
     {
-      name: "actions/version",
-      source: "templates/actions/version.yml",
-      dest: ".github/workflows/version.yml",
-    },
-    {
       name: "config/prettier",
       source: "templates/config/.prettierrc.json",
       dest: ".prettierrc.json",
@@ -52,6 +47,11 @@ export class TemplateGenerator {
   ];
 
   public static AdditionalFiles: File[] = [
+    {
+      name: "actions/version",
+      source: "templates/actions/version.yml",
+      dest: ".github/workflows/version.yml",
+    },
     {
       name: "actions/release",
       source: "templates/actions/release.yml",
@@ -89,11 +89,27 @@ export class TemplateGenerator {
     });
     if (!filesToWrite.length) return;
 
+    const hasActionsPublish = filesToWrite.find(
+      (f) => f.name === "actions/publish"
+    );
+    const hasActionsVersion = filesToWrite.find(
+      (f) => f.name === "actions/version"
+    );
+
     // prepare operations
     const operations = filesToWrite.map((file) => () => this.write(file));
 
     const loader = createLoader("generating files");
     loader.start();
+
+    if (hasActionsPublish)
+      loader.info(
+        "you will need to setup an NPM_TOKEN secret containing an NPM Access Token for publish.yml"
+      );
+    if (hasActionsVersion)
+      loader.info(
+        "you will need to setup a VERSION_TOKEN secret containing an Github Personal Access Token for version.yml"
+      );
 
     // skip if dry run
     if (!dryRun) await Promise.all(operations.map((fn) => fn()));

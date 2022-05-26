@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### 0.2.2 (2022-05-26)
+
+
+### Bug Fixes
+
+* use github PAT for version action to enable triggering of other actions ([81df73e](https://github.com/eriicafes/reflow/commit/81df73ed0800d3a7e12376b8ab7604db815bfb29))
+
 ### 0.2.1 (2022-05-25)
 
 

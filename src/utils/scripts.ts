@@ -25,7 +25,12 @@ export class ScriptsManager {
     loader.start();
 
     // skip if dry run
-    if (!dryRun) await Promise.all(operations.map((fn) => fn()));
+    if (!dryRun) {
+      // call set-script one after the other
+      for (let operation of operations) {
+        await operation()
+      }
+    }
 
     loader.succeed("done adding npm scripts");
   }

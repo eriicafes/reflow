@@ -47,14 +47,14 @@ export class HooksManager {
       // create hook file using husky
       husky.add(`.husky/${hook.file}`, contents);
     });
-
-    // restore logs
-    console.log = consoleLog;
     
     const loader = createLoader("installing git hooks");
     loader.start();
-
+    
     if (!dryRun) await Promise.all(operations.map((fn) => fn()));
+    
+    // restore logs
+    console.log = consoleLog;
 
     loader.succeed("done installing git hooks");
   }

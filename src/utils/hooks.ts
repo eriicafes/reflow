@@ -27,9 +27,6 @@ export class HooksManager {
 
     if (!dryRun) husky.install();
 
-    // restore logs
-    console.log = consoleLog;
-
     const hooksToInstall = await prepareWrite({
       files: HooksManager.Hooks,
       dest: ({ file }) => `.husky/${file}`,
@@ -50,11 +47,14 @@ export class HooksManager {
       // create hook file using husky
       husky.add(`.husky/${hook.file}`, contents);
     });
-
+    
     const loader = createLoader("installing git hooks");
     loader.start();
-
+    
     if (!dryRun) await Promise.all(operations.map((fn) => fn()));
+    
+    // restore logs
+    console.log = consoleLog;
 
     loader.succeed("done installing git hooks");
   }

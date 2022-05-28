@@ -85,7 +85,7 @@ export class DependenciesManager {
     const loader = createLoader(
       `installing ${packages.length} packages using ${
         this.manager.binary
-      } ${packages.map((p) => p.name + "@" + p.version)}`
+      }: ${packages.map((p) => "\n\t" + p.name + "@" + p.version).join("")}`
     );
     loader.start();
 

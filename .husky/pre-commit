@@ -2,7 +2,7 @@
 . "$(dirname "$0")/_/husky.sh"
 
 node lib/cli pre-commit
-npx --no lint-staged --quiet
-npx --no pretty-quick --staged
+npx --no -- lint-staged --quiet
+npx --no -- pretty-quick --staged
 npm test
 npm run build

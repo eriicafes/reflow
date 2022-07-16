@@ -6,8 +6,10 @@ export type Package<Dev extends boolean = boolean> = {
   dev: Dev;
 };
 
-export abstract class BasePackageManager {
-  public abstract binary: string;
+export type Manager = "npm";
+
+export abstract class PackageManager {
+  public abstract binary: Manager;
 
   public abstract commands: {
     install: string;
@@ -47,7 +49,7 @@ export abstract class BasePackageManager {
   }
 }
 
-export class NpmManager extends BasePackageManager {
+export class NpmManager extends PackageManager {
   public readonly binary = "npm";
 
   public commands = {

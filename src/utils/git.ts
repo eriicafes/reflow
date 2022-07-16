@@ -134,12 +134,11 @@ export const mergeBranchToMain = async (
     )}`
   ).start();
 
+  const initialBranch = await getCurrentBranch();
+
   try {
-    const previousBranch = await getCurrentBranch();
-
+    // this checks out the main branch
     await pullAndRebaseFromMain(targetBranch, dryRun);
-
-    await checkoutBranch(config.mainBranch, dryRun);
 
     // Perform a fast-forward merge if merge commit is turned off in config or prefer fast forward flag is present
     if (!dryRun)
@@ -161,14 +160,15 @@ export const mergeBranchToMain = async (
     if (options.deleteOnSuccess) await deleteBranch(targetBranch, dryRun);
 
     // Return back to current branch if branch was not deleted
-    if (!options.deleteOnSuccess && previousBranch !== config.mainBranch)
-      await checkoutBranch(previousBranch, dryRun);
+    if (!options.deleteOnSuccess && initialBranch !== config.mainBranch)
+      await checkoutBranch(initialBranch, dryRun);
   } catch (e: any) {
     loader.fail(
       `merge ${chalk.cyanBright(targetBranch)} into ${chalk.cyanBright(
         config.mainBranch
       )} failed`
     );
+    await checkoutBranch(initialBranch, dryRun);
     throw new CliError.Git(e.message);
   }
 };

@@ -137,8 +137,10 @@ export const mergeBranchToMain = async (
   const initialBranch = await getCurrentBranch();
 
   try {
-    // this checks out the main branch
     await pullAndRebaseFromMain(targetBranch, dryRun);
+
+    // rebase checkout out the target branch
+    await checkoutBranch(config.mainBranch, dryRun);
 
     // Perform a fast-forward merge if merge commit is turned off in config or prefer fast forward flag is present
     if (!dryRun)

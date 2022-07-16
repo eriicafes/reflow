@@ -6,7 +6,7 @@ export type Package<Dev extends boolean = boolean> = {
   dev: Dev;
 };
 
-export type Manager = "npm";
+export type Manager = "npm" | "yarn";
 
 export abstract class PackageManager {
   public abstract binary: Manager;
@@ -56,5 +56,15 @@ export class NpmManager extends PackageManager {
     install: "install",
     save: "--save",
     saveDev: "--save-dev",
+  };
+}
+
+export class YarnManager extends PackageManager {
+  public readonly binary = "yarn";
+
+  public commands = {
+    install: "yarn",
+    save: "",
+    saveDev: "--dev",
   };
 }

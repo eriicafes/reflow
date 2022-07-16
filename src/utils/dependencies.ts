@@ -98,7 +98,7 @@ export class DependenciesManager {
         type: "list",
         name: "manager",
         message: `Which package manager do you want to use?`,
-        choices: ["npm"] as Manager[],
+        choices: ["npm", "yarn"] as Manager[],
         when: (ctx) => ctx.proceed,
       },
     ])) as { proceed: boolean; manager: Manager };

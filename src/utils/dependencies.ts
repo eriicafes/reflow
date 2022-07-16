@@ -1,6 +1,8 @@
 import chalk from "chalk";
+import { CliError } from "./error";
 import { createLoader } from "./loader";
-import { BasePackageManager, NpmManager, Package } from "./managers";
+import { PackageManager, Manager, NpmManager, Package } from "./managers";
+import { prompt } from "./prompt";
 import { snip } from "./snippets";
 
 export class DependenciesManager {
@@ -82,26 +84,50 @@ export class DependenciesManager {
   ) {
     if (!packages.length) return;
 
+    const { proceed, manager } = (await prompt([
+      {
+        type: "confirm",
+        name: "proceed",
+        message: `Proceeding will install the following ${
+          packages.length
+        } packages: \n ${packages
+          .map((p) => "\n\t" + p.name + "@" + p.version)
+          .join("")} \n\n continue?`,
+      },
+      {
+        type: "list",
+        name: "manager",
+        message: `Which package manager do you want to use?`,
+        choices: ["npm", "yarn"] as Manager[],
+        when: (ctx) => ctx.proceed,
+      },
+    ])) as { proceed: boolean; manager: Manager };
+
+    // cancel install
+    if (!proceed) throw new CliError.Info("Install was aborted");
+
+    const packageManager = this.getPackageManager(manager);
+
     const loader = createLoader(
-      `installing ${packages.length} packages using ${
-        this.manager.binary
-      }: ${packages.map((p) => "\n\t" + p.name + "@" + p.version).join("")}`
+      `installing ${packages.length} packages using ${packageManager.binary}`
     );
     loader.start();
 
     if (install) {
       // skip if dry run
-      if (!dryRun) await this.manager.install(packages);
+      if (!dryRun) await packageManager.install(packages);
     } else {
-      const { dev, prod } = this.manager.group(packages);
+      const { dev, prod } = packageManager.group(packages);
       if (dev.length)
         loader.info(
-          `run ${chalk.green(snip(this.manager.getInstallCommand(dev, true)))}`
+          `run ${chalk.green(
+            snip(packageManager.getInstallCommand(dev, true))
+          )}`
         );
       if (prod.length)
         loader.info(
           `run ${chalk.green(
-            snip(this.manager.getInstallCommand(prod, false))
+            snip(packageManager.getInstallCommand(prod, false))
           )}`
         );
     }
@@ -109,7 +135,12 @@ export class DependenciesManager {
     loader.succeed("done installing dependencies");
   }
 
-  private get manager(): BasePackageManager {
-    return new NpmManager();
+  private getPackageManager(manager: Manager): PackageManager {
+    switch (manager) {
+      case "npm":
+        return new NpmManager();
+      default:
+        return new NpmManager();
+    }
   }
 }

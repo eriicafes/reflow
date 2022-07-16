@@ -52,7 +52,7 @@ export class CommandLoader {
   }
 
   public static load(program: Command) {
-    const LocalCommandLoader = this.localLoader();
+    const LocalCommandLoader = CommandLoader.getLocalCommandLoader();
 
     if (LocalCommandLoader) {
       return new LocalCommandLoader(program, "local").load();
@@ -61,7 +61,7 @@ export class CommandLoader {
     }
   }
 
-  private static localLoader(): typeof this | undefined {
+  private static getLocalCommandLoader(): typeof CommandLoader | undefined {
     const localLoaderPath = path.join(
       process.cwd(),
       "node_modules",
@@ -71,13 +71,15 @@ export class CommandLoader {
     );
 
     try {
+      // debugging package locally
       if (process.cwd() === ROOT_DIR) {
-        return this;
+        return CommandLoader;
       }
 
-      const localLoaderFile = require(localLoaderPath);
+      const localCommandLoaderFile = require(localLoaderPath);
 
-      return localLoaderFile.CommandLoader as typeof this;
+      // local installation
+      return localCommandLoaderFile.CommandLoader as typeof CommandLoader;
     } catch (error) {
       return undefined;
     }

@@ -4,6 +4,7 @@ import { config } from "./config";
 import { createLoader } from "./loader";
 import chalk from "chalk";
 import { CliError } from "./error";
+import { logger } from "./logger";
 
 export const getCurrentBranch = async () => {
   const { stdout } = await exec("git rev-parse --abbrev-ref HEAD");
@@ -128,11 +129,11 @@ export const mergeBranchToMain = async (
   options: { preferFastForward: boolean; deleteOnSuccess: boolean },
   dryRun?: boolean
 ) => {
-  const loader = createLoader(
+  logger.log(
     `merging ${chalk.cyanBright(targetBranch)} into ${chalk.cyanBright(
       config.mainBranch
     )}`
-  ).start();
+  );
 
   const initialBranch = await getCurrentBranch();
 
@@ -152,7 +153,7 @@ export const mergeBranchToMain = async (
         }`
       );
 
-    loader.succeed(
+    logger.log(
       `merged ${chalk.cyanBright(targetBranch)} into ${chalk.cyanBright(
         config.mainBranch
       )}`
@@ -165,7 +166,7 @@ export const mergeBranchToMain = async (
     if (!options.deleteOnSuccess && initialBranch !== config.mainBranch)
       await checkoutBranch(initialBranch, dryRun);
   } catch (e: any) {
-    loader.fail(
+    logger.error(
       `merge ${chalk.cyanBright(targetBranch)} into ${chalk.cyanBright(
         config.mainBranch
       )} failed`

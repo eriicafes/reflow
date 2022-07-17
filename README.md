@@ -1,15 +1,15 @@
 # Reflow 🚀
 
-### An opinionated but slightly configurable Git workflow tool 🚀.
+### An opinionated workflow tool for Typescript projects 🚀
 
-Reflow is aimed at reducing the complexity in setting up a proper dev environment for a typescript project.
+Reflow is aimed at reducing the complexity in setting up a proper dev environment for typescript projects.
 
 ## Features
 
 - Git workflow **(Reflow CLI)**
 - Format files with [Prettier](https://prettier.io)
 - Lint files with [ESLint](https://eslint.org)
-- Lint files for commit with [Lint Staged](https://github.com/okonet/lint-staged)
+- Lint staged files for commit with [Lint Staged](https://github.com/okonet/lint-staged)
 - Compose conventional commit messages with [Commitizen](https://github.com/commitizen/cz-cli) and [cz-conventional-changelog](https://github.com/commitizen/cz-conventional-changelog)
 - Verify commit messages with [Commitlint](https://commitlint.js.org)
 - Git Hooks with [Husky](https://github.com/typicode/husky)
@@ -33,9 +33,9 @@ npx reflow init
 #### Or install both globally and locally (preferred):
 
 ```bash
-npm install -g @eriicafes/reflow
+npm install -g @eriicafes/reflow # global
 
-npm install @eriicafes/reflow
+npm install @eriicafes/reflow #local
 ```
 
 And initialise:
@@ -44,21 +44,11 @@ And initialise:
 reflow init
 ```
 
-Global installation is preferred as reflow still requires a local installation and will always run the locally installed binary when available.
+With a global installation you will not be required to use `npx`. Global installation is preferred as reflow still requires a local installation and will always run the locally installed binary when available.
 
 ## Usage/Examples
 
-Examples below assume you have both a global installation and a local installation, for local installation only you will have to prefix the command with `npx` ie:
-
-```bash
-npx reflow
-```
-
-or
-
-```bash
-reflow
-```
+Examples below assume you have both a global installation and a local installation, for local installation only you will have to prefix the command with `npx`
 
 All commands have a `-h or --help` flag to display a help message.
 Nearly all commands have a `-d or --dry-run` flag useful to see the commands that would run without actually making any changes.
@@ -146,6 +136,12 @@ Options:
   --no-push       prevent pushing changes and tags to remote
 ```
 
+NOTE: For projects that started with a major version at zero (0.y.z) you may need some manual action to bump the major version to 1.0.0. Once the project is ready for the first major release, run the command below from the main branch:
+
+```bash
+reflow release --as major -f
+```
+
 ### Prerelease
 
 make a pre-release (eg. v1.0.1-{tag}.0)
@@ -189,7 +185,33 @@ All actions are listed below:
 - release.yml (triggered by version.yml workflow, creates a draft github release)
 - publish.yml (triggered by release.yml workflow, publishes package to NPM) requires an **NPM_TOKEN** secret containing an NPM Access Token
 
-All actions can be modified to as needed
+All actions can be modified as needed
+
+### Advanced (configure reflow CLI)
+
+For some use cases you may need to override certain defaults in the reflow config by first generating the config file using `reflow generate` and selecting `config/reflow` (which is probably the last item on the list)
+
+Below are the defaults which you may customize as needed:
+
+```json
+{
+  "mainBranch": "main",
+  "remote": "origin",
+  "branchDelimeter": "/",
+  "allowedBranches": [
+    // change branch names
+    "feature",
+    "fix",
+    "chore",
+    "refactor",
+    "build",
+    "style",
+    "docs",
+    "test"
+  ],
+  "keepMergeCommits": true // if false will use fast-forward merges
+}
+```
 
 ## Contributing
 

@@ -1,6 +1,6 @@
 {
   "name": "@eriicafes/reflow",
-  "version": "0.2.8",
+  "version": "0.2.9",
   "description": "An opinionated but slightly configurable Git workflow tool 🚀",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",

@@ -1,6 +1,6 @@
 {
   "name": "@eriicafes/reflow",
-  "version": "0.2.10",
+  "version": "0.2.11",
   "description": "An opinionated workflow tool for Typescript projects 🚀",
   "scripts": {
     "test": "echo \"Error: no test specified\" && exit 0",

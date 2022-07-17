@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [0.2.11](https://github.com/eriicafes/reflow/compare/v0.2.10...v0.2.11) (2022-07-17)
+
+
+### Bug Fixes
+
+* change project description in package.json ([3ed7dae](https://github.com/eriicafes/reflow/commit/3ed7dae7c26b4b59f65a7dbc0cd21b0a4d1fb244))
+
 ### [0.2.10](https://github.com/eriicafes/reflow/compare/v0.2.9...v0.2.10) (2022-07-17)
 
 ### 0.2.9 (2022-07-17)

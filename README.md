@@ -199,7 +199,6 @@ Below are the defaults which you may customize as needed:
   "remote": "origin",
   "branchDelimeter": "/",
   "allowedBranches": [
-    // change branch names
     "feature",
     "fix",
     "chore",
@@ -209,7 +208,7 @@ Below are the defaults which you may customize as needed:
     "docs",
     "test"
   ],
-  "keepMergeCommits": true // if false will use fast-forward merges
+  "keepMergeCommits": true
 }
 ```
 

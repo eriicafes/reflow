@@ -33,5 +33,4 @@ jobs:
         run: |
           npm ci
           npm run build
-          npm start -- release
-          npm start -- push
+          node lib/cli release

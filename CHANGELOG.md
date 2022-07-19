@@ -2,6 +2,13 @@
 
 All notable changes to this project will be documented in this file. See [standard-version](https://github.com/conventional-changelog/standard-version) for commit guidelines.
 
+### [1.0.1](https://github.com/eriicafes/reflow/compare/v1.0.0...v1.0.1) (2022-07-19)
+
+
+### Bug Fixes
+
+* remove empty step in publish.yml action template ([9878a5b](https://github.com/eriicafes/reflow/commit/9878a5bb0d723a18739efec9fc0055483497ea1c))
+
 ## [1.0.0](https://github.com/eriicafes/reflow/compare/v0.2.11...v1.0.0) (2022-07-17)
 
 ### [0.2.11](https://github.com/eriicafes/reflow/compare/v0.2.10...v0.2.11) (2022-07-17)
